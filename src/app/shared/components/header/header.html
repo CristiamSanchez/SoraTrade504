@@ -1,1 +1,28 @@
-<p>header works!</p>
+<header class="header">
+  <a class="brand" routerLink="/cotizaciones">
+    <span class="brand__mark">ST</span>
+
+    <span class="brand__text">
+      <strong>Sora Trade 504</strong>
+      <small>Facturas y cotizaciones</small>
+    </span>
+  </a>
+
+  <nav class="navigation" aria-label="Navegación principal">
+    <a
+      routerLink="/cotizaciones"
+      routerLinkActive="navigation__link--active"
+      class="navigation__link"
+    >
+      Cotizaciones
+    </a>
+
+    <a
+      routerLink="/facturas"
+      routerLinkActive="navigation__link--active"
+      class="navigation__link"
+    >
+      Facturas
+    </a>
+  </nav>
+</header>
