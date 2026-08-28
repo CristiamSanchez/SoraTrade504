@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DocumentItem } from '../../../../core/models/document-item';
 import { InvoiceDocument } from '../../../../core/models/invoice-document';
 import { DocumentCalculator } from '../../../../core/services/document-calculator';
 import { InvoicePdf } from '../../../../core/services/invoice-pdf';
 import { dateNotBefore } from '../../../../core/validators/date-not-before';
+import { Component, inject, signal } from '@angular/core';
+import { InvoiceStorage } from '../../../../core/services/invoice-storage';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -17,6 +18,10 @@ export class InvoiceForm {
   private readonly formBuilder = inject(FormBuilder);
   private readonly calculator = inject(DocumentCalculator);
   private readonly invoicePdf = inject(InvoicePdf);
+
+  private readonly invoiceStorage = inject(InvoiceStorage);
+
+  readonly invoices = signal<InvoiceDocument[]>(this.invoiceStorage.getAll());
 
   readonly form = this.formBuilder.nonNullable.group(
     {
@@ -71,6 +76,21 @@ export class InvoiceForm {
     this.items.removeAt(index);
   }
 
+  async downloadInvoice(invoice: InvoiceDocument): Promise<void> {
+    await this.invoicePdf.generate(invoice);
+  }
+
+  removeInvoice(id: string): void {
+    const confirmed = window.confirm('¿Deseas eliminar esta factura del historial local?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.invoiceStorage.remove(id);
+    this.refreshHistory();
+  }
+
   async submit(): Promise<void> {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -94,6 +114,9 @@ export class InvoiceForm {
       totals: this.totals,
       createdAt: new Date().toISOString(),
     };
+
+    this.invoiceStorage.save(invoice);
+    this.refreshHistory();
 
     await this.invoicePdf.generate(invoice);
   }
@@ -119,5 +142,8 @@ export class InvoiceForm {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  }
+  private refreshHistory(): void {
+    this.invoices.set(this.invoiceStorage.getAll());
   }
 }

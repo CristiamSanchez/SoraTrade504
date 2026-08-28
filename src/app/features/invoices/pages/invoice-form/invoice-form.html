@@ -297,3 +297,57 @@
     </aside>
   </section>
 </form>
+
+@if (invoices().length > 0) {
+  <section class="form-card quotation-history">
+    <div class="section-heading">
+      <div>
+        <h2>Historial local</h2>
+        <p>Facturas guardadas en este navegador.</p>
+      </div>
+
+      <span class="history-count">
+        {{ invoices().length }}
+        {{ invoices().length === 1 ? 'factura' : 'facturas' }}
+      </span>
+    </div>
+
+    <div class="history-table-wrapper">
+      <div class="history-table">
+        <div class="history-table__header">
+          <span>Número</span>
+          <span>Cliente</span>
+          <span>Fecha</span>
+          <span>Total</span>
+          <span>Acciones</span>
+        </div>
+
+        @for (invoice of invoices(); track invoice.id) {
+          <div class="history-table__row">
+            <strong>{{ invoice.invoiceNumber }}</strong>
+            <span>{{ invoice.client.name }}</span>
+            <span>{{ invoice.issueDate }}</span>
+
+            <strong>
+              {{ invoice.totals.total | currency: 'HNL' : 'symbol' : '1.2-2' }}
+            </strong>
+
+            <div class="history-actions">
+              <button class="history-button" type="button" (click)="downloadInvoice(invoice)">
+                Descargar
+              </button>
+
+              <button
+                class="history-button history-button--danger"
+                type="button"
+                (click)="removeInvoice(invoice.id)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
