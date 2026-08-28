@@ -8,6 +8,10 @@ import {
 } from '@angular/forms';
 import { DocumentItem } from '../../../../core/models/document-item';
 import { DocumentCalculator } from '../../../../core/services/document-calculator';
+import { QuotationDocument } from '../../../../core/models/quotation-document';
+import { QuotationPdf } from '../../../../core/services/quotation-pdf';
+
+
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -18,6 +22,7 @@ import { DocumentCalculator } from '../../../../core/services/document-calculato
 export class QuotationForm {
   private readonly formBuilder = inject(FormBuilder);
   private readonly calculator = inject(DocumentCalculator);
+  private readonly quotationPdf = inject(QuotationPdf);
 
   readonly form = this.formBuilder.nonNullable.group({
     quotationNumber: [
@@ -73,21 +78,29 @@ export class QuotationForm {
     this.items.removeAt(index);
   }
 
-  submit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const quotation = {
-      id: crypto.randomUUID(),
-      ...this.form.getRawValue(),
-      totals: this.totals,
-      createdAt: new Date().toISOString(),
-    };
-
-    console.log('Quotation ready:', quotation);
+async submit(): Promise<void> {
+  if (this.form.invalid) {
+    this.form.markAllAsTouched();
+    return;
   }
+
+  const value = this.form.getRawValue();
+
+  const quotation: QuotationDocument = {
+    id: crypto.randomUUID(),
+    quotationNumber: value.quotationNumber,
+    issueDate: value.issueDate,
+    expirationDate: value.expirationDate,
+    client: value.client,
+    items: value.items,
+    taxRate: value.taxRate,
+    notes: value.notes,
+    totals: this.totals,
+    createdAt: new Date().toISOString(),
+  };
+
+  await this.quotationPdf.generate(quotation);
+}
 
   private createItemGroup() {
     return this.formBuilder.nonNullable.group({
