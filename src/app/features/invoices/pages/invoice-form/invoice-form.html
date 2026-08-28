@@ -1,8 +1,299 @@
-<section class="document-page">
-  <span class="document-page__eyebrow">Nuevo documento</span>
-  <h1>Crear factura</h1>
-  <p>
-    Completa la información fiscal y los productos para generar una
-    factura en PDF.
-  </p>
-</section>
+<form class="quotation-form" [formGroup]="form" (ngSubmit)="submit()">
+  <aside class="form-card fiscal-notice">
+    <strong>Factura demostrativa</strong>
+    <span>
+      Este generador no sustituye la autorización fiscal ni garantiza el cumplimiento de las
+      disposiciones vigentes del SAR.
+    </span>
+  </aside>
+
+  <section class="page-heading">
+    <div>
+      <span class="eyebrow">Nuevo documento</span>
+      <h1>Crear factura</h1>
+      <p>Completa los datos fiscales, el cliente y los productos.</p>
+    </div>
+
+    <button class="primary-button" type="submit">Preparar factura</button>
+  </section>
+
+  <section class="form-card">
+    <div class="section-heading">
+      <div>
+        <h2>Información fiscal</h2>
+        <p>Ingresa los datos proporcionados para esta simulación.</p>
+      </div>
+    </div>
+
+    <div class="form-grid form-grid--three">
+      <label class="field">
+        <span>Número de factura *</span>
+        <input
+          type="text"
+          formControlName="invoiceNumber"
+          placeholder="000-001-01-00000001"
+          autocomplete="off"
+        />
+
+        @if (form.controls.invoiceNumber.touched && form.controls.invoiceNumber.invalid) {
+          <small class="field-error"> El número de factura es obligatorio. </small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Fecha de emisión *</span>
+        <input type="date" formControlName="issueDate" />
+      </label>
+
+      <label class="field">
+        <span>Fecha límite de emisión *</span>
+        <input type="date" formControlName="emissionDeadline" />
+
+        @if (
+          form.hasError('emissionDeadlineBeforeIssueDate') &&
+          (form.controls.issueDate.touched || form.controls.emissionDeadline.touched)
+        ) {
+          <small class="field-error">
+            La fecha límite no puede ser anterior a la fecha de emisión.
+          </small>
+        }
+      </label>
+
+      <label class="field field--full">
+        <span>CAI *</span>
+        <input
+          type="text"
+          formControlName="cai"
+          placeholder="Código de autorización de impresión"
+          autocomplete="off"
+        />
+
+        @if (form.controls.cai.touched && form.controls.cai.invalid) {
+          <small class="field-error"> El CAI es obligatorio para esta simulación. </small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Rango autorizado inicial *</span>
+        <input
+          type="text"
+          formControlName="authorizedRangeStart"
+          placeholder="000-001-01-00000001"
+          autocomplete="off"
+        />
+      </label>
+
+      <label class="field">
+        <span>Rango autorizado final *</span>
+        <input
+          type="text"
+          formControlName="authorizedRangeEnd"
+          placeholder="000-001-01-00000100"
+          autocomplete="off"
+        />
+      </label>
+    </div>
+  </section>
+
+  <section class="form-card" formGroupName="client">
+    <div class="section-heading">
+      <div>
+        <h2>Información del cliente</h2>
+        <p>El nombre es obligatorio. Los demás datos son opcionales.</p>
+      </div>
+    </div>
+
+    <div class="form-grid form-grid--two">
+      <label class="field">
+        <span>Nombre o razón social *</span>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Nombre del cliente"
+          autocomplete="name"
+        />
+
+        @if (
+          form.controls.client.controls.name.touched && form.controls.client.controls.name.invalid
+        ) {
+          <small class="field-error"> El nombre del cliente es obligatorio. </small>
+        }
+      </label>
+
+      <label class="field">
+        <span>Identidad o RTN</span>
+        <input
+          type="text"
+          formControlName="identityOrRtn"
+          placeholder="Identidad o RTN"
+          autocomplete="off"
+        />
+      </label>
+
+      <label class="field">
+        <span>Teléfono</span>
+        <input type="tel" formControlName="phone" placeholder="+504 9999-9999" autocomplete="tel" />
+      </label>
+
+      <label class="field">
+        <span>Correo electrónico</span>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="cliente@ejemplo.com"
+          autocomplete="email"
+        />
+
+        @if (
+          form.controls.client.controls.email.touched &&
+          form.controls.client.controls.email.hasError('email')
+        ) {
+          <small class="field-error"> Ingresa un correo electrónico válido. </small>
+        }
+      </label>
+
+      <label class="field field--full">
+        <span>Dirección</span>
+        <textarea formControlName="address" rows="3" placeholder="Dirección del cliente"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <section class="form-card">
+    <div class="section-heading section-heading--products">
+      <div>
+        <h2>Productos o servicios</h2>
+        <p>Agrega descripción, cantidad y precio unitario.</p>
+      </div>
+
+      <button class="secondary-button" type="button" (click)="addItem()">+ Agregar producto</button>
+    </div>
+
+    <div class="items-table-wrapper">
+      <div class="items-table" formArrayName="items">
+        <div class="items-table__header">
+          <span>Código</span>
+          <span>Descripción *</span>
+          <span>Cantidad</span>
+          <span>Precio unitario</span>
+          <span>Gravado</span>
+          <span>Subtotal</span>
+          <span aria-hidden="true"></span>
+        </div>
+
+        @for (item of items.controls; track item.value.id; let index = $index) {
+          <div class="items-table__row" [formGroupName]="index">
+            <input type="text" formControlName="code" aria-label="Código" placeholder="P001" />
+
+            <div>
+              <input
+                type="text"
+                formControlName="description"
+                aria-label="Descripción"
+                placeholder="Producto o servicio"
+              />
+
+              @if (item.get('description')?.touched && item.get('description')?.invalid) {
+                <small class="field-error"> La descripción es obligatoria. </small>
+              }
+            </div>
+
+            <input
+              type="number"
+              formControlName="quantity"
+              aria-label="Cantidad"
+              min="0.01"
+              step="0.01"
+            />
+
+            <input
+              type="number"
+              formControlName="unitPrice"
+              aria-label="Precio unitario"
+              min="0"
+              step="0.01"
+            />
+
+            <label class="checkbox-field">
+              <input type="checkbox" formControlName="taxable" />
+              <span>Sí</span>
+            </label>
+
+            <strong class="line-total">
+              {{ calculateLineSubtotal(index) | currency: 'HNL' : 'symbol' : '1.2-2' }}
+            </strong>
+
+            <button
+              class="remove-button"
+              type="button"
+              aria-label="Eliminar producto"
+              [disabled]="items.length === 1"
+              (click)="removeItem(index)"
+            >
+              ×
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="form-card summary-layout">
+    <div>
+      <div class="section-heading">
+        <div>
+          <h2>Observaciones</h2>
+          <p>Información adicional de la factura.</p>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Notas</span>
+        <textarea
+          formControlName="notes"
+          rows="5"
+          placeholder="Observaciones o condiciones adicionales."
+        ></textarea>
+      </label>
+    </div>
+
+    <aside class="totals-card">
+      <label class="field">
+        <span>Impuesto (%)</span>
+        <input type="number" formControlName="taxRate" min="0" max="100" step="0.01" />
+      </label>
+
+      <dl class="totals">
+        <div>
+          <dt>Subtotal</dt>
+          <dd>
+            {{ totals.subtotal | currency: 'HNL' : 'symbol' : '1.2-2' }}
+          </dd>
+        </div>
+
+        <div>
+          <dt>Subtotal gravado</dt>
+          <dd>
+            {{ totals.taxableSubtotal | currency: 'HNL' : 'symbol' : '1.2-2' }}
+          </dd>
+        </div>
+
+        <div>
+          <dt>Impuesto</dt>
+          <dd>
+            {{ totals.tax | currency: 'HNL' : 'symbol' : '1.2-2' }}
+          </dd>
+        </div>
+
+        <div class="totals__final">
+          <dt>Total</dt>
+          <dd>
+            {{ totals.total | currency: 'HNL' : 'symbol' : '1.2-2' }}
+          </dd>
+        </div>
+      </dl>
+
+      <button class="primary-button primary-button--full" type="submit">Preparar factura</button>
+    </aside>
+  </section>
+</form>

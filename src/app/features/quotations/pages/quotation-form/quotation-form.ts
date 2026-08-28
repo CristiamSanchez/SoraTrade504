@@ -6,6 +6,7 @@ import { QuotationDocument } from '../../../../core/models/quotation-document';
 import { QuotationPdf } from '../../../../core/services/quotation-pdf';
 import { QuotationStorage } from '../../../../core/services/quotation-storage';
 import { Component, inject, signal } from '@angular/core';
+import { dateNotBefore } from '../../../../core/validators/date-not-before';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -21,21 +22,26 @@ export class QuotationForm {
 
   readonly quotations = signal<QuotationDocument[]>(this.quotationStorage.getAll());
 
-  readonly form = this.formBuilder.nonNullable.group({
-    quotationNumber: [this.generateQuotationNumber(), Validators.required],
-    issueDate: [this.formatDate(new Date()), Validators.required],
-    expirationDate: [this.formatDate(this.addDays(new Date(), 15)), Validators.required],
-    client: this.formBuilder.nonNullable.group({
-      name: ['', [Validators.required, Validators.maxLength(150)]],
-      identityOrRtn: ['', Validators.maxLength(50)],
-      phone: ['', Validators.maxLength(30)],
-      email: ['', [Validators.email, Validators.maxLength(254)]],
-      address: ['', Validators.maxLength(500)],
-    }),
-    taxRate: [15, [Validators.required, Validators.min(0), Validators.max(100)]],
-    notes: ['', Validators.maxLength(1000)],
-    items: this.formBuilder.array([this.createItemGroup()]),
-  });
+  readonly form = this.formBuilder.nonNullable.group(
+    {
+      quotationNumber: [this.generateQuotationNumber(), Validators.required],
+      issueDate: [this.formatDate(new Date()), Validators.required],
+      expirationDate: [this.formatDate(this.addDays(new Date(), 15)), Validators.required],
+      client: this.formBuilder.nonNullable.group({
+        name: ['', [Validators.required, Validators.maxLength(150)]],
+        identityOrRtn: ['', Validators.maxLength(50)],
+        phone: ['', Validators.maxLength(30)],
+        email: ['', [Validators.email, Validators.maxLength(254)]],
+        address: ['', Validators.maxLength(500)],
+      }),
+      taxRate: [15, [Validators.required, Validators.min(0), Validators.max(100)]],
+      notes: ['', Validators.maxLength(1000)],
+      items: this.formBuilder.array([this.createItemGroup()]),
+    },
+    {
+      validators: dateNotBefore('issueDate', 'expirationDate', 'expirationDateBeforeIssueDate'),
+    },
+  );
 
   get items(): FormArray {
     return this.form.controls.items;

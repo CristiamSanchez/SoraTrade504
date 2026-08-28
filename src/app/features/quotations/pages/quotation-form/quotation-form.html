@@ -31,6 +31,15 @@
       <label class="field">
         <span>Fecha de vencimiento</span>
         <input type="date" formControlName="expirationDate" />
+
+        @if (
+          form.hasError('expirationDateBeforeIssueDate') &&
+          (form.controls.issueDate.touched || form.controls.expirationDate.touched)
+        ) {
+          <small class="field-error">
+            La fecha de vencimiento no puede ser anterior a la fecha de emisión.
+          </small>
+        }
       </label>
     </div>
   </section>
