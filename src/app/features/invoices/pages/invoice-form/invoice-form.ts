@@ -7,6 +7,7 @@ import { InvoicePdf } from '../../../../core/services/invoice-pdf';
 import { dateNotBefore } from '../../../../core/validators/date-not-before';
 import { Component, inject, signal } from '@angular/core';
 import { InvoiceStorage } from '../../../../core/services/invoice-storage';
+import { GoogleSheetsSync } from '../../../../core/services/google-sheets-sync';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -20,6 +21,8 @@ export class InvoiceForm {
   private readonly invoicePdf = inject(InvoicePdf);
 
   private readonly invoiceStorage = inject(InvoiceStorage);
+
+  private readonly googleSheetsSync = inject(GoogleSheetsSync);
 
   readonly invoices = signal<InvoiceDocument[]>(this.invoiceStorage.getAll());
 
@@ -119,6 +122,7 @@ export class InvoiceForm {
     this.refreshHistory();
 
     await this.invoicePdf.generate(invoice);
+    await this.googleSheetsSync.saveInvoice(invoice);
   }
 
   private createItemGroup() {

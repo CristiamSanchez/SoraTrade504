@@ -7,6 +7,7 @@ import { QuotationPdf } from '../../../../core/services/quotation-pdf';
 import { QuotationStorage } from '../../../../core/services/quotation-storage';
 import { Component, inject, signal } from '@angular/core';
 import { dateNotBefore } from '../../../../core/validators/date-not-before';
+import { GoogleSheetsSync } from '../../../../core/services/google-sheets-sync';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -19,6 +20,8 @@ export class QuotationForm {
   private readonly calculator = inject(DocumentCalculator);
   private readonly quotationPdf = inject(QuotationPdf);
   private readonly quotationStorage = inject(QuotationStorage);
+
+  private readonly googleSheetsSync = inject(GoogleSheetsSync);
 
   readonly quotations = signal<QuotationDocument[]>(this.quotationStorage.getAll());
 
@@ -111,6 +114,7 @@ export class QuotationForm {
     this.refreshHistory();
 
     await this.quotationPdf.generate(quotation);
+    await this.googleSheetsSync.saveQuotation(quotation);
   }
 
   private createItemGroup() {
