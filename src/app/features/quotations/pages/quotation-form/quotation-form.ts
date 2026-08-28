@@ -1,17 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import {
-  FormArray,
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DocumentItem } from '../../../../core/models/document-item';
 import { DocumentCalculator } from '../../../../core/services/document-calculator';
 import { QuotationDocument } from '../../../../core/models/quotation-document';
 import { QuotationPdf } from '../../../../core/services/quotation-pdf';
-
-
+import { QuotationStorage } from '../../../../core/services/quotation-storage';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -23,17 +17,12 @@ export class QuotationForm {
   private readonly formBuilder = inject(FormBuilder);
   private readonly calculator = inject(DocumentCalculator);
   private readonly quotationPdf = inject(QuotationPdf);
+  private readonly quotationStorage = inject(QuotationStorage);
 
   readonly form = this.formBuilder.nonNullable.group({
-    quotationNumber: [
-      this.generateQuotationNumber(),
-      Validators.required,
-    ],
+    quotationNumber: [this.generateQuotationNumber(), Validators.required],
     issueDate: [this.formatDate(new Date()), Validators.required],
-    expirationDate: [
-      this.formatDate(this.addDays(new Date(), 15)),
-      Validators.required,
-    ],
+    expirationDate: [this.formatDate(this.addDays(new Date(), 15)), Validators.required],
     client: this.formBuilder.nonNullable.group({
       name: ['', [Validators.required, Validators.maxLength(150)]],
       identityOrRtn: ['', Validators.maxLength(50)],
@@ -41,10 +30,7 @@ export class QuotationForm {
       email: ['', [Validators.email, Validators.maxLength(254)]],
       address: ['', Validators.maxLength(500)],
     }),
-    taxRate: [
-      15,
-      [Validators.required, Validators.min(0), Validators.max(100)],
-    ],
+    taxRate: [15, [Validators.required, Validators.min(0), Validators.max(100)]],
     notes: ['', Validators.maxLength(1000)],
     items: this.formBuilder.array([this.createItemGroup()]),
   });
@@ -78,46 +64,41 @@ export class QuotationForm {
     this.items.removeAt(index);
   }
 
-async submit(): Promise<void> {
-  if (this.form.invalid) {
-    this.form.markAllAsTouched();
-    return;
+  async submit(): Promise<void> {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const value = this.form.getRawValue();
+
+    const quotation: QuotationDocument = {
+      id: crypto.randomUUID(),
+      quotationNumber: value.quotationNumber,
+      issueDate: value.issueDate,
+      expirationDate: value.expirationDate,
+      client: value.client,
+      items: value.items,
+      taxRate: value.taxRate,
+      notes: value.notes,
+      totals: this.totals,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.quotationStorage.save(quotation);
+
+    await this.quotationPdf.generate(quotation);
+
+    await this.quotationPdf.generate(quotation);
   }
-
-  const value = this.form.getRawValue();
-
-  const quotation: QuotationDocument = {
-    id: crypto.randomUUID(),
-    quotationNumber: value.quotationNumber,
-    issueDate: value.issueDate,
-    expirationDate: value.expirationDate,
-    client: value.client,
-    items: value.items,
-    taxRate: value.taxRate,
-    notes: value.notes,
-    totals: this.totals,
-    createdAt: new Date().toISOString(),
-  };
-
-  await this.quotationPdf.generate(quotation);
-}
 
   private createItemGroup() {
     return this.formBuilder.nonNullable.group({
       id: [crypto.randomUUID()],
       code: ['', Validators.maxLength(50)],
-      description: [
-        '',
-        [Validators.required, Validators.maxLength(300)],
-      ],
-      quantity: [
-        1,
-        [Validators.required, Validators.min(0.01)],
-      ],
-      unitPrice: [
-        0,
-        [Validators.required, Validators.min(0)],
-      ],
+      description: ['', [Validators.required, Validators.maxLength(300)]],
+      quantity: [1, [Validators.required, Validators.min(0.01)]],
+      unitPrice: [0, [Validators.required, Validators.min(0)]],
       taxable: [true],
     });
   }
