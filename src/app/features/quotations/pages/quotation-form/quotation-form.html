@@ -3,14 +3,10 @@
     <div>
       <span class="eyebrow">Nuevo documento</span>
       <h1>Crear cotización</h1>
-      <p>
-        Completa los datos requeridos para preparar la cotización.
-      </p>
+      <p>Completa los datos requeridos para preparar la cotización.</p>
     </div>
 
-    <button class="primary-button" type="submit">
-      Preparar cotización
-    </button>
+    <button class="primary-button" type="submit">Preparar cotización</button>
   </section>
 
   <section class="form-card">
@@ -24,11 +20,7 @@
     <div class="form-grid form-grid--three">
       <label class="field">
         <span>Número de cotización</span>
-        <input
-          type="text"
-          formControlName="quotationNumber"
-          autocomplete="off"
-        />
+        <input type="text" formControlName="quotationNumber" autocomplete="off" />
       </label>
 
       <label class="field">
@@ -47,9 +39,7 @@
     <div class="section-heading">
       <div>
         <h2>Información del cliente</h2>
-        <p>
-          El nombre es obligatorio. Los demás datos son opcionales.
-        </p>
+        <p>El nombre es obligatorio. Los demás datos son opcionales.</p>
       </div>
     </div>
 
@@ -64,12 +54,9 @@
         />
 
         @if (
-          form.controls.client.controls.name.touched &&
-          form.controls.client.controls.name.invalid
+          form.controls.client.controls.name.touched && form.controls.client.controls.name.invalid
         ) {
-          <small class="field-error">
-            El nombre del cliente es obligatorio.
-          </small>
+          <small class="field-error"> El nombre del cliente es obligatorio. </small>
         }
       </label>
 
@@ -85,12 +72,7 @@
 
       <label class="field">
         <span>Teléfono</span>
-        <input
-          type="tel"
-          formControlName="phone"
-          autocomplete="tel"
-          placeholder="+504 9999-9999"
-        />
+        <input type="tel" formControlName="phone" autocomplete="tel" placeholder="+504 9999-9999" />
       </label>
 
       <label class="field">
@@ -106,19 +88,13 @@
           form.controls.client.controls.email.touched &&
           form.controls.client.controls.email.hasError('email')
         ) {
-          <small class="field-error">
-            Ingresa un correo electrónico válido.
-          </small>
+          <small class="field-error"> Ingresa un correo electrónico válido. </small>
         }
       </label>
 
       <label class="field field--full">
         <span>Dirección</span>
-        <textarea
-          formControlName="address"
-          rows="3"
-          placeholder="Dirección del cliente"
-        ></textarea>
+        <textarea formControlName="address" rows="3" placeholder="Dirección del cliente"></textarea>
       </label>
     </div>
   </section>
@@ -130,13 +106,7 @@
         <p>Agrega al menos una descripción, cantidad y precio.</p>
       </div>
 
-      <button
-        class="secondary-button"
-        type="button"
-        (click)="addItem()"
-      >
-        + Agregar producto
-      </button>
+      <button class="secondary-button" type="button" (click)="addItem()">+ Agregar producto</button>
     </div>
 
     <div class="items-table-wrapper">
@@ -151,21 +121,9 @@
           <span aria-hidden="true"></span>
         </div>
 
-        @for (
-          item of items.controls;
-          track item.value.id;
-          let index = $index
-        ) {
-          <div
-            class="items-table__row"
-            [formGroupName]="index"
-          >
-            <input
-              type="text"
-              formControlName="code"
-              aria-label="Código"
-              placeholder="P001"
-            />
+        @for (item of items.controls; track item.value.id; let index = $index) {
+          <div class="items-table__row" [formGroupName]="index">
+            <input type="text" formControlName="code" aria-label="Código" placeholder="P001" />
 
             <div>
               <input
@@ -175,13 +133,8 @@
                 placeholder="Producto o servicio"
               />
 
-              @if (
-                item.get('description')?.touched &&
-                item.get('description')?.invalid
-              ) {
-                <small class="field-error">
-                  La descripción es obligatoria.
-                </small>
+              @if (item.get('description')?.touched && item.get('description')?.invalid) {
+                <small class="field-error"> La descripción es obligatoria. </small>
               }
             </div>
 
@@ -207,10 +160,7 @@
             </label>
 
             <strong class="line-total">
-              {{
-                calculateLineSubtotal(index)
-                  | currency: 'HNL' : 'symbol' : '1.2-2'
-              }}
+              {{ calculateLineSubtotal(index) | currency: 'HNL' : 'symbol' : '1.2-2' }}
             </strong>
 
             <button
@@ -250,60 +200,98 @@
     <aside class="totals-card">
       <label class="field">
         <span>Impuesto (%)</span>
-        <input
-          type="number"
-          formControlName="taxRate"
-          min="0"
-          max="100"
-          step="0.01"
-        />
+        <input type="number" formControlName="taxRate" min="0" max="100" step="0.01" />
       </label>
 
       <dl class="totals">
         <div>
           <dt>Subtotal</dt>
           <dd>
-            {{
-              totals.subtotal
-                | currency: 'HNL' : 'symbol' : '1.2-2'
-            }}
+            {{ totals.subtotal | currency: 'HNL' : 'symbol' : '1.2-2' }}
           </dd>
         </div>
 
         <div>
           <dt>Subtotal gravado</dt>
           <dd>
-            {{
-              totals.taxableSubtotal
-                | currency: 'HNL' : 'symbol' : '1.2-2'
-            }}
+            {{ totals.taxableSubtotal | currency: 'HNL' : 'symbol' : '1.2-2' }}
           </dd>
         </div>
 
         <div>
           <dt>Impuesto</dt>
           <dd>
-            {{
-              totals.tax
-                | currency: 'HNL' : 'symbol' : '1.2-2'
-            }}
+            {{ totals.tax | currency: 'HNL' : 'symbol' : '1.2-2' }}
           </dd>
         </div>
 
         <div class="totals__final">
           <dt>Total</dt>
           <dd>
-            {{
-              totals.total
-                | currency: 'HNL' : 'symbol' : '1.2-2'
-            }}
+            {{ totals.total | currency: 'HNL' : 'symbol' : '1.2-2' }}
           </dd>
         </div>
       </dl>
 
-      <button class="primary-button primary-button--full" type="submit">
-        Preparar cotización
-      </button>
+      <button class="primary-button primary-button--full" type="submit">Preparar cotización</button>
     </aside>
   </section>
 </form>
+
+@if (quotations().length > 0) {
+  <section class="form-card quotation-history">
+    <div class="section-heading">
+      <div>
+        <h2>Historial local</h2>
+        <p>Cotizaciones guardadas en este navegador.</p>
+      </div>
+
+      <span class="history-count">
+        {{ quotations().length }}
+        {{ quotations().length === 1 ? 'cotización' : 'cotizaciones' }}
+      </span>
+    </div>
+
+    <div class="history-table-wrapper">
+      <div class="history-table">
+        <div class="history-table__header">
+          <span>Número</span>
+          <span>Cliente</span>
+          <span>Fecha</span>
+          <span>Total</span>
+          <span>Acciones</span>
+        </div>
+
+        @for (quotation of quotations(); track quotation.id) {
+          <div class="history-table__row">
+            <strong>
+              {{ quotation.quotationNumber }}
+            </strong>
+
+            <span>{{ quotation.client.name }}</span>
+
+            <span>{{ quotation.issueDate }}</span>
+
+            <strong>
+              {{ quotation.totals.total | currency: 'HNL' : 'symbol' : '1.2-2' }}
+            </strong>
+
+            <div class="history-actions">
+              <button class="history-button" type="button" (click)="downloadQuotation(quotation)">
+                Descargar
+              </button>
+
+              <button
+                class="history-button history-button--danger"
+                type="button"
+                (click)="removeQuotation(quotation.id)"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

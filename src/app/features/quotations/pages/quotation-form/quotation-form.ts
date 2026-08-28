@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DocumentItem } from '../../../../core/models/document-item';
 import { DocumentCalculator } from '../../../../core/services/document-calculator';
 import { QuotationDocument } from '../../../../core/models/quotation-document';
 import { QuotationPdf } from '../../../../core/services/quotation-pdf';
 import { QuotationStorage } from '../../../../core/services/quotation-storage';
+import { Component, inject, signal } from '@angular/core';
 
 @Component({
   imports: [CommonModule, ReactiveFormsModule],
@@ -18,6 +18,8 @@ export class QuotationForm {
   private readonly calculator = inject(DocumentCalculator);
   private readonly quotationPdf = inject(QuotationPdf);
   private readonly quotationStorage = inject(QuotationStorage);
+
+  readonly quotations = signal<QuotationDocument[]>(this.quotationStorage.getAll());
 
   readonly form = this.formBuilder.nonNullable.group({
     quotationNumber: [this.generateQuotationNumber(), Validators.required],
@@ -63,6 +65,20 @@ export class QuotationForm {
 
     this.items.removeAt(index);
   }
+  async downloadQuotation(quotation: QuotationDocument): Promise<void> {
+    await this.quotationPdf.generate(quotation);
+  }
+
+  removeQuotation(id: string): void {
+    const confirmed = window.confirm('¿Deseas eliminar esta cotización del historial local?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.quotationStorage.remove(id);
+    this.refreshHistory();
+  }
 
   async submit(): Promise<void> {
     if (this.form.invalid) {
@@ -86,8 +102,7 @@ export class QuotationForm {
     };
 
     this.quotationStorage.save(quotation);
-
-    await this.quotationPdf.generate(quotation);
+    this.refreshHistory();
 
     await this.quotationPdf.generate(quotation);
   }
@@ -137,5 +152,8 @@ export class QuotationForm {
     const day = String(date.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  }
+  private refreshHistory(): void {
+    this.quotations.set(this.quotationStorage.getAll());
   }
 }

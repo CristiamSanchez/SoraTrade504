@@ -274,3 +274,82 @@ textarea {
     padding: 1rem;
   }
 }
+
+.quotation-history {
+  margin-top: 1.5rem;
+}
+
+.history-count {
+  background: #e5f3ef;
+  border-radius: 999px;
+  color: #16645b;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.45rem 0.75rem;
+}
+
+.history-table-wrapper {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+}
+
+.history-table {
+  min-width: 760px;
+}
+
+.history-table__header,
+.history-table__row {
+  align-items: center;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 170px minmax(180px, 1fr) 120px 130px 190px;
+}
+
+.history-table__header {
+  border-bottom: 1px solid #dce5e3;
+  color: #657a76;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0 0.6rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.history-table__row {
+  border-bottom: 1px solid #edf2f1;
+  color: #344d48;
+  font-size: 0.87rem;
+  padding: 0.85rem 0.6rem;
+}
+
+.history-table__row:last-child {
+  border-bottom: 0;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.history-button {
+  background: #e5f3ef;
+  border: 0;
+  border-radius: 7px;
+  color: #16645b;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.55rem 0.7rem;
+}
+
+.history-button:hover {
+  background: #d3eae3;
+}
+
+.history-button--danger {
+  background: #fde8e7;
+  color: #b42318;
+}
+
+.history-button--danger:hover {
+  background: #fbd3d0;
+}
